@@ -27,9 +27,9 @@ Happy brewing!
 - Add local convolution layer
 - Add ceiling rounding option to infer output shape in pooling layer
 - Add batch size parameter when init Net
-- Take central crop of mean blob when dimension doesn't match with input size
+- Take central crop of mean blob when dimensions doesn't match to input
 - Allow to output specific blob in pycaffe
-- Add tools to stitch two trained neural networks together
+- Add tool to stitch two trained neural networks together
 
 ## License and Citation
 
