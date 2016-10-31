@@ -22,8 +22,9 @@ class Classifier(caffe.Net):
     """
     def __init__(self, model_file, pretrained_file, image_dims=None,
                  mean=None, input_scale=None, raw_scale=None,
-                 channel_swap=None):
-        caffe.Net.__init__(self, model_file, pretrained_file, caffe.TEST)
+                 channel_swap=None, batch=None):
+        batch = 0 if batch is None else int(batch)
+        caffe.Net.__init__(self, model_file, pretrained_file, caffe.TEST, batch)
 
         # configure pre-processing
         in_ = self.inputs[0]

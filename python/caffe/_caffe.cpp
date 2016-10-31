@@ -103,7 +103,7 @@ void CheckContiguousArray(PyArrayObject* arr, string name,
 
 // Net constructor
 shared_ptr<Net<Dtype> > Net_Init(string network_file, int phase,
-    const int level, const bp::object& stages,
+    const int batch, const int level, const bp::object& stages,
     const bp::object& weights) {
   CheckFile(network_file);
 
@@ -117,7 +117,7 @@ shared_ptr<Net<Dtype> > Net_Init(string network_file, int phase,
 
   // Initialize net
   shared_ptr<Net<Dtype> > net(new Net<Dtype>(network_file,
-        static_cast<Phase>(phase), level, &stages_vector));
+       static_cast<Phase>(phase), batch, level, &stages_vector));
 
   // Load weights
   if (!weights.is_none()) {
@@ -131,17 +131,18 @@ shared_ptr<Net<Dtype> > Net_Init(string network_file, int phase,
 
 // Legacy Net construct-and-load convenience constructor
 shared_ptr<Net<Dtype> > Net_Init_Load(
-    string param_file, string pretrained_param_file, int phase, int batch=0) {
+    string param_file, string pretrained_param_file, int phase, int batch) {
   LOG(WARNING) << "DEPRECATION WARNING - deprecated use of Python interface";
   LOG(WARNING) << "Use this instead (with the named \"weights\""
     << " parameter):";
   LOG(WARNING) << "Net('" << param_file << "', " << phase
-    << ", weights='" << pretrained_param_file << "')";
+               << ", weights='" << pretrained_param_file << "'"
+               << ", batch=" << batch << ")";
   CheckFile(param_file);
   CheckFile(pretrained_param_file);
 
   shared_ptr<Net<Dtype> > net(new Net<Dtype>(param_file,
-      static_cast<Phase>(phase)));
+       static_cast<Phase>(phase), batch));
   net->CopyTrainedLayersFrom(pretrained_param_file);
   return net;
 }
@@ -368,7 +369,7 @@ BOOST_PYTHON_MODULE(_caffe) {
     // Constructor
     .def("__init__", bp::make_constructor(&Net_Init,
           bp::default_call_policies(), (bp::arg("network_file"), "phase",
-            bp::arg("level")=0, bp::arg("stages")=bp::object(),
+            bp::arg("batch")=0, bp::arg("level")=0, bp::arg("stages")=bp::object(),
             bp::arg("weights")=bp::object())))
     // Legacy constructor
     .def("__init__", bp::make_constructor(&Net_Init_Load, bp::default_call_policies(),

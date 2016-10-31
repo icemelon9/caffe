@@ -25,12 +25,20 @@ Net<Dtype>::Net(const NetParameter& param) {
 }
 
 template <typename Dtype>
-Net<Dtype>::Net(const string& param_file, Phase phase,
-    const int level, const vector<string>* stages) {
+Net<Dtype>::Net(const string& param_file, Phase phase, const int batch,
+                const int level, const vector<string>* stages) {
   NetParameter param;
   ReadNetParamsFromTextFileOrDie(param_file, &param);
-  // Set phase, stages and level
+  // Set phase, batch, stages and level
   param.mutable_state()->set_phase(phase);
+  if (batch > 0) {
+    for (int i = 0; i < param.layer_size(); ++i) {
+      LayerParameter* layer = param.mutable_layer()->Mutable(i);
+      if (layer->type() == "Input")
+        layer->mutable_input_param()->mutable_shape()->Mutable(0)
+            ->set_dim(0, batch);
+    }
+  }
   if (stages != NULL) {
     for (int i = 0; i < stages->size(); i++) {
       param.mutable_state()->add_stage((*stages)[i]);

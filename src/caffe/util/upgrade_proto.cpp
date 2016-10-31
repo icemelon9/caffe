@@ -808,6 +808,10 @@ bool UpgradeV1LayerParameter(const V1LayerParameter& v1_layer_param,
     layer_param->mutable_inner_product_param()->CopyFrom(
         v1_layer_param.inner_product_param());
   }
+  if (v1_layer_param.has_local_param()) {
+    layer_param->mutable_local_conv_param()->CopyFrom(
+        v1_layer_param.local_param());
+  }
   if (v1_layer_param.has_lrn_param()) {
     layer_param->mutable_lrn_param()->CopyFrom(
         v1_layer_param.lrn_param());
@@ -919,6 +923,8 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "InfogainLoss";
   case V1LayerParameter_LayerType_INNER_PRODUCT:
     return "InnerProduct";
+  case V1LayerParameter_LayerType_LOCAL:
+    return "LocalConv";
   case V1LayerParameter_LayerType_LRN:
     return "LRN";
   case V1LayerParameter_LayerType_MEMORY_DATA:

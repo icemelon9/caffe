@@ -24,7 +24,7 @@ template <typename Dtype>
 class Net {
  public:
   explicit Net(const NetParameter& param);
-  explicit Net(const string& param_file, Phase phase,
+  explicit Net(const string& param_file, Phase phase, const int batch = 0,
       const int level = 0, const vector<string>* stages = NULL);
   virtual ~Net() {}
 
