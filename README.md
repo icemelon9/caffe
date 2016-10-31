@@ -22,6 +22,15 @@ Framework development discussions and thorough bug reports are collected on [Iss
 
 Happy brewing!
 
+## Change list
+
+- Add local convolution layer
+- Add ceiling rounding option to infer output shape in pooling layer
+- Add batch size parameter when init Net
+- Take central crop of mean blob when dimension doesn't match with input size
+- Allow to output specific blob in pycaffe
+- Add tools to stitch two trained neural networks together
+
 ## License and Citation
 
 Caffe is released under the [BSD 2-Clause license](https://github.com/BVLC/caffe/blob/master/LICENSE).
