@@ -85,7 +85,7 @@ def _Net_outputs(self):
     return self._output_list
 
 
-def _Net_forward(self, blobs=None, start=None, end=None, **kwargs):
+def _Net_forward(self, blobs=None, start=None, end=None, blobKey=None, **kwargs):
     """
     Forward pass: prepare inputs and run the net forward.
 
@@ -129,6 +129,9 @@ def _Net_forward(self, blobs=None, start=None, end=None, **kwargs):
             self.blobs[in_].data[...] = blob
 
     self._forward(start_ind, end_ind)
+
+    if blobKey != None:
+        return {out: self.blobs[blobKey].data for out in outputs}
 
     # Unpack blobs to extract
     return {out: self.blobs[out].data for out in outputs}
