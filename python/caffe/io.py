@@ -256,7 +256,16 @@ class Transformer:
             if len(ms) != 3:
                 raise ValueError('Mean shape invalid')
             if ms != self.inputs[in_][1:]:
-                raise ValueError('Mean shape incompatible with input shape.')
+                print('Take center crop of mean from %s to %s' % (ms, self.inputs[in_][1:]))
+                center = np.array(ms[1:]) / 2.0
+                crop_dims = np.array(self.inputs[in_][2:])
+                crop = np.tile(center, (1, 2))[0] + np.concatenate([
+                    -crop_dims / 2.0,
+                    crop_dims / 2.0
+                ])
+                crop = crop.astype(int)
+                mean = mean[:, crop[0]:crop[2], crop[1]:crop[3]]
+                #raise ValueError('Mean shape incompatible with input shape.')
         self.mean[in_] = mean
 
     def set_input_scale(self, in_, scale):
