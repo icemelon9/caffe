@@ -131,7 +131,7 @@ shared_ptr<Net<Dtype> > Net_Init(string network_file, int phase,
 
 // Legacy Net construct-and-load convenience constructor
 shared_ptr<Net<Dtype> > Net_Init_Load(
-    string param_file, string pretrained_param_file, int phase) {
+    string param_file, string pretrained_param_file, int phase, int batch=0) {
   LOG(WARNING) << "DEPRECATION WARNING - deprecated use of Python interface";
   LOG(WARNING) << "Use this instead (with the named \"weights\""
     << " parameter):";
@@ -371,7 +371,8 @@ BOOST_PYTHON_MODULE(_caffe) {
             bp::arg("level")=0, bp::arg("stages")=bp::object(),
             bp::arg("weights")=bp::object())))
     // Legacy constructor
-    .def("__init__", bp::make_constructor(&Net_Init_Load))
+    .def("__init__", bp::make_constructor(&Net_Init_Load, bp::default_call_policies(),
+          (bp::arg("param_file"), bp::arg("pretrained_param_file"), "phase", bp::arg("batch")=0)))
     .def("_forward", &Net<Dtype>::ForwardFromTo)
     .def("_backward", &Net<Dtype>::BackwardFromTo)
     .def("reshape", &Net<Dtype>::Reshape)
