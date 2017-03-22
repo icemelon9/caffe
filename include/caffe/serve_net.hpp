@@ -138,11 +138,10 @@ class ServeNet {
   inline const vector<Blob<Dtype>*>& input_blobs() const {
     return net_input_blobs_;
   }
-  void set_input_blobs(vector<shared_ptr<Blob<Dtype> > >& input_blobs);
+  void set_input_blobs(const vector<shared_ptr<Blob<Dtype> > >& input_blobs);
   inline const vector<Blob<Dtype>*>& output_blobs() const {
     return net_output_blobs_;
   }
-  void set_output_blobs(vector<shared_ptr<Blob<Dtype> > >& outptu_blobs);
   inline const vector<int>& input_blob_indices() const {
     return net_input_blob_indices_;
   }
@@ -216,7 +215,6 @@ class ServeNet {
   /// pointers.
   vector<vector<Blob<Dtype>*> > bottom_vecs_;
   vector<vector<int> > bottom_id_vecs_;
-  vector<vector<bool> > bottom_need_backward_;
   /// top_vecs stores the vectors containing the output for each layer
   vector<vector<Blob<Dtype>*> > top_vecs_;
   vector<vector<int> > top_id_vecs_;

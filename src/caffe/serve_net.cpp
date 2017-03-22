@@ -120,6 +120,8 @@ void ServeNet<Dtype>::Init(const NetParameter& in_param, size_t max_batch) {
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       LOG_IF(INFO, Caffe::root_solver())
           << "Top shape: " << top_vecs_[layer_id][top_id]->shape_string();
+      // materialize the gpu buffer
+      top_vecs_[layer_id][top_id]->gpu_data();
       memory_used_ += top_vecs_[layer_id][top_id]->count();
     }
     LOG_IF(INFO, Caffe::root_solver())
@@ -227,8 +229,11 @@ void ServeNet<Dtype>::Init(const NetParameter& in_param, size_t max_batch) {
   }
   */
   // In the end, all remaining blobs are considered output blobs.
+  int kk = 0;
   for (set<string>::iterator it = available_blobs.begin();
       it != available_blobs.end(); ++it) {
+    ++kk;
+    LOG(INFO) << kk;
     LOG_IF(INFO, Caffe::root_solver())
         << "This network produces output " << *it;
     net_output_blobs_.push_back(blobs_[blob_name_to_idx[*it]].get());
@@ -513,7 +518,7 @@ Dtype ServeNet<Dtype>::ForwardFromTo(int start, int end) {
     // }
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     loss += layer_loss;
-    //if (debug_info_) { ForwardDebugInfo(i); }
+    // if (debug_info_) { ForwardDebugInfo(i); }
     // for (int c = 0; c < after_forward_.size(); ++c) {
     //   after_forward_[c]->run(i);
     // }
@@ -774,7 +779,7 @@ void ServeNet<Dtype>::ShareWeights() {
 
 template <typename Dtype>
 void ServeNet<Dtype>::set_input_blobs(
-    vector<shared_ptr<Blob<Dtype> > >& input_blobs) {
+    const vector<shared_ptr<Blob<Dtype> > >& input_blobs) {
   CHECK_EQ(input_blobs.size(), net_input_blobs_.size())
       << "Number of input blobs mismatch (" << input_blobs.size()
       << " vs " << net_input_blobs_.size() << ")";
@@ -782,19 +787,29 @@ void ServeNet<Dtype>::set_input_blobs(
     int blob_index = net_input_blob_indices_[i];
     blobs_[blob_index] = input_blobs[i];
     net_input_blobs_[i] = input_blobs[i].get();
-  }
-}
-
-template <typename Dtype>
-void ServeNet<Dtype>::set_output_blobs(
-    vector<shared_ptr<Blob<Dtype> > >& output_blobs) {
-  CHECK_EQ(output_blobs.size(), net_output_blobs_.size())
-      << "Number of output blobs mismatch (" << output_blobs.size()
-      << " vs " << net_output_blobs_.size() << ")";
-  for (size_t i = 0; i < net_output_blobs_.size(); ++i) {
-    int blob_index = net_output_blob_indices_[i];
-    blobs_[blob_index] = output_blobs[i];
-    net_output_blobs_[i] = output_blobs[i].get();
+    // update blob pointers in bottom_vecs_ and top_vecs_
+    bool found = false;
+    for (size_t j = 0; j < bottom_id_vecs_.size(); ++j) {
+      for (size_t k = 0; k < bottom_id_vecs_[j].size(); ++k) { 
+        if (bottom_id_vecs_[j][k] == blob_index) {
+          bottom_vecs_[j][k] = input_blobs[i].get();
+          found = true;
+          break;
+        }
+        if (found) break;
+      }
+    }
+    found = false;
+    for (size_t j = 0; j < top_id_vecs_.size(); ++j) {
+      for (size_t k = 0; k < top_id_vecs_[j].size(); ++k) { 
+        if (top_id_vecs_[j][k] == blob_index) {
+          top_vecs_[j][k] = input_blobs[i].get();
+          found = true;
+          break;
+        }
+        if (found) break;
+      }
+    }
   }
 }
 
