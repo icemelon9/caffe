@@ -229,11 +229,8 @@ void ServeNet<Dtype>::Init(const NetParameter& in_param, size_t max_batch) {
   }
   */
   // In the end, all remaining blobs are considered output blobs.
-  int kk = 0;
   for (set<string>::iterator it = available_blobs.begin();
       it != available_blobs.end(); ++it) {
-    ++kk;
-    LOG(INFO) << kk;
     LOG_IF(INFO, Caffe::root_solver())
         << "This network produces output " << *it;
     net_output_blobs_.push_back(blobs_[blob_name_to_idx[*it]].get());
