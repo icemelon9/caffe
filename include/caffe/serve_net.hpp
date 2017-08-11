@@ -82,8 +82,8 @@ class ServeNet {
    *        another Net.
    */
   void CopyTrainedLayersFrom(const NetParameter& param);
-  void CopyTrainedLayersFrom(const string trained_filename);
-  void CopyTrainedLayersFromBinaryProto(const string trained_filename);
+  void CopyTrainedLayersFrom(const string& trained_filename);
+  void CopyTrainedLayersFromBinaryProto(const string& trained_filename);
   //void CopyTrainedLayersFromHDF5(const string trained_filename);
   /// @brief Writes the net to a proto.
   void ToProto(NetParameter* param, bool write_diff = false) const;
@@ -138,7 +138,6 @@ class ServeNet {
   inline const vector<Blob<Dtype>*>& input_blobs() const {
     return net_input_blobs_;
   }
-  void set_input_blobs(const vector<shared_ptr<Blob<Dtype> > >& input_blobs);
   inline const vector<Blob<Dtype>*>& output_blobs() const {
     return net_output_blobs_;
   }
@@ -150,6 +149,10 @@ class ServeNet {
   }
   bool has_blob(const string& blob_name) const;
   const shared_ptr<Blob<Dtype> > blob_by_name(const string& blob_name) const;
+  // set blob by name and return the previous blob
+  shared_ptr<Blob<Dtype> > set_blob(const string& blob_name,
+                                    shared_ptr<Blob<Dtype> > blob);
+  //void set_input_blobs(const vector<shared_ptr<Blob<Dtype> > >& input_blobs);
   bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer<Dtype> > layer_by_name(const string& layer_name) const;
 
@@ -165,23 +168,6 @@ class ServeNet {
   /// @brief return whether NetState state meets NetStateRule rule
   static bool StateMeetsRule(const NetState& state, const NetStateRule& rule,
       const string& layer_name);
-
-  // Invoked at specific points during an iteration
-  /*class Callback {
-   protected:
-    virtual void run(int layer) = 0;
-
-    template <typename T>
-    friend class Net;
-  };
-  const vector<Callback*>& before_forward() const { return before_forward_; }
-  void add_before_forward(Callback* value) {
-    before_forward_.push_back(value);
-  }
-  const vector<Callback*>& after_forward() const { return after_forward_; }
-  void add_after_forward(Callback* value) {
-    after_forward_.push_back(value);
-    }*/
 
  protected:
   // Helpers for Init.
@@ -227,13 +213,8 @@ class ServeNet {
   size_t memory_used_;
   /// Whether to compute and display debug info for the net.
   bool debug_info_;
-  // Callbacks
-  //vector<Callback*> before_forward_;
-  //vector<Callback*> after_forward_;
-  //vector<Callback*> before_backward_;
-  //vector<Callback*> after_backward_;
 
-DISABLE_COPY_AND_ASSIGN(ServeNet);
+  DISABLE_COPY_AND_ASSIGN(ServeNet);
 };
 
 

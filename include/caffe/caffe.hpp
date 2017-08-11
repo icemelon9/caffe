@@ -12,6 +12,7 @@
 #include "caffe/net.hpp"
 #include "caffe/parallel.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/serve_net.hpp"
 #include "caffe/solver.hpp"
 #include "caffe/solver_factory.hpp"
 #include "caffe/util/benchmark.hpp"

@@ -510,15 +510,9 @@ Dtype ServeNet<Dtype>::ForwardFromTo(int start, int end) {
   CHECK_LT(end, layers_.size());
   Dtype loss = 0;
   for (int i = start; i <= end; ++i) {
-    // for (int c = 0; c < before_forward_.size(); ++c) {
-    //   before_forward_[c]->run(i);
-    // }
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     loss += layer_loss;
     // if (debug_info_) { ForwardDebugInfo(i); }
-    // for (int c = 0; c < after_forward_.size(); ++c) {
-    //   after_forward_[c]->run(i);
-    // }
   }
   return loss;
 }
@@ -627,7 +621,7 @@ void ServeNet<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
 }
 
 template <typename Dtype>
-void ServeNet<Dtype>::CopyTrainedLayersFrom(const string trained_filename) {
+void ServeNet<Dtype>::CopyTrainedLayersFrom(const string& trained_filename) {
   // if (trained_filename.size() >= 3 &&
   //   trained_filename.compare(trained_filename.size() - 3, 3, ".h5") == 0) {
   // CopyTrainedLayersFromHDF5(trained_filename);
@@ -638,7 +632,7 @@ void ServeNet<Dtype>::CopyTrainedLayersFrom(const string trained_filename) {
 
 template <typename Dtype>
 void ServeNet<Dtype>::CopyTrainedLayersFromBinaryProto(
-    const string trained_filename) {
+    const string& trained_filename) {
   NetParameter param;
   ReadNetParamsFromBinaryFileOrDie(trained_filename, &param);
   CopyTrainedLayersFrom(param);
@@ -762,8 +756,7 @@ void ServeNet<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
   }
   H5Fclose(file_hid);
 }
-*/
-/*
+
 template <typename Dtype>
 void ServeNet<Dtype>::ShareWeights() {
   for (int i = 0; i < params_.size(); ++i) {
@@ -773,42 +766,6 @@ void ServeNet<Dtype>::ShareWeights() {
   }
 }
 */
-
-template <typename Dtype>
-void ServeNet<Dtype>::set_input_blobs(
-    const vector<shared_ptr<Blob<Dtype> > >& input_blobs) {
-  CHECK_EQ(input_blobs.size(), net_input_blobs_.size())
-      << "Number of input blobs mismatch (" << input_blobs.size()
-      << " vs " << net_input_blobs_.size() << ")";
-  for (size_t i = 0; i < net_input_blobs_.size(); ++i) {
-    int blob_index = net_input_blob_indices_[i];
-    blobs_[blob_index] = input_blobs[i];
-    net_input_blobs_[i] = input_blobs[i].get();
-    // update blob pointers in bottom_vecs_ and top_vecs_
-    bool found = false;
-    for (size_t j = 0; j < bottom_id_vecs_.size(); ++j) {
-      for (size_t k = 0; k < bottom_id_vecs_[j].size(); ++k) { 
-        if (bottom_id_vecs_[j][k] == blob_index) {
-          bottom_vecs_[j][k] = input_blobs[i].get();
-          found = true;
-          break;
-        }
-        if (found) break;
-      }
-    }
-    found = false;
-    for (size_t j = 0; j < top_id_vecs_.size(); ++j) {
-      for (size_t k = 0; k < top_id_vecs_[j].size(); ++k) { 
-        if (top_id_vecs_[j][k] == blob_index) {
-          top_vecs_[j][k] = input_blobs[i].get();
-          found = true;
-          break;
-        }
-        if (found) break;
-      }
-    }
-  }
-}
 
 template <typename Dtype>
 bool ServeNet<Dtype>::has_blob(const string& blob_name) const {
@@ -831,6 +788,35 @@ const shared_ptr<Blob<Dtype> > ServeNet<Dtype>::blob_by_name(
 template <typename Dtype>
 bool ServeNet<Dtype>::has_layer(const string& layer_name) const {
   return layer_names_index_.find(layer_name) != layer_names_index_.end();
+}
+
+template <typename Dtype>
+shared_ptr<Blob<Dtype> > ServeNet<Dtype>::set_blob(
+    const string& blob_name, shared_ptr<Blob<Dtype> > blob) {
+  auto it = blob_names_index_.find(blob_name);
+  CHECK(it != blob_names_index_.end()) << "Cannot find blob " << blob_name;
+  int blob_id = it->second;
+  shared_ptr<Blob<Dtype> > old_blob = blobs_[blob_id];
+  blobs_[blob_id] = blob;
+  // replace blob pointers in bottom, top, input and output blobs
+  auto replace_blob = [&](vector<Blob<Dtype>*>& blobs) {
+    for (int i = 0; i < blobs.size(); ++i) {
+      if (blobs[i] == old_blob.get()) {
+        blobs[i] = blob.get();
+        return true;
+      }
+    }
+    return false;
+  };
+  for (int i = 0; i < bottom_vecs_.size(); ++i) {
+    replace_blob(bottom_vecs_[i]);
+  }
+  for (int i = 0; i < top_vecs_.size(); ++i) {
+    replace_blob(top_vecs_[i]);
+  }
+  replace_blob(net_input_blobs_);
+  replace_blob(net_output_blobs_);
+  return old_blob;
 }
 
 template <typename Dtype>
