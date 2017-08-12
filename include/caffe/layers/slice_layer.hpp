@@ -28,6 +28,7 @@ class SliceLayer : public Layer<Dtype> {
   virtual inline const char* type() const { return "Slice"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int MinTopBlobs() const { return 1; }
+  void SetSlicePoints(const vector<int>& slice_points);
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,

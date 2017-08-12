@@ -149,9 +149,10 @@ class ServeNet {
   }
   bool has_blob(const string& blob_name) const;
   const shared_ptr<Blob<Dtype> > blob_by_name(const string& blob_name) const;
-  // set blob by name and return the previous blob
+  // set blob by name or index, returns the previous blob
   shared_ptr<Blob<Dtype> > set_blob(const string& blob_name,
                                     shared_ptr<Blob<Dtype> > blob);
+  shared_ptr<Blob<Dtype> > set_blob(int blob_id, shared_ptr<Blob<Dtype> > blob);
   //void set_input_blobs(const vector<shared_ptr<Blob<Dtype> > >& input_blobs);
   bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer<Dtype> > layer_by_name(const string& layer_name) const;

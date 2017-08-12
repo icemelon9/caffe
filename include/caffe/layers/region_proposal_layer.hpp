@@ -48,6 +48,7 @@ class RegionProposalLayer : public Layer<Dtype> {
   int post_nms_top_n_;
   Dtype nms_threshold_;
   int min_size_;
+  bool global_context_;
   // input and output shapes
   int num_anchors_;
   int batch_;

@@ -23,6 +23,7 @@ void RegionProposalLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   post_nms_top_n_ = proposal_param.post_nms_top_n();
   nms_threshold_ = proposal_param.nms_threshold();
   min_size_ = proposal_param.min_size();
+  global_context_ = proposal_param.global_context();
   // Compute the anchors
   vector<float> scales = {8, 16, 32};
   if (proposal_param.scale_size() > 0) {
@@ -58,11 +59,15 @@ void RegionProposalLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     nms_out_.Reshape({max_num_boxes_});
   }
   // Reshape output
-  int num_rois = nms_out_.shape(0);
+  int num_rois = nms_out_.shape(0); // num rois per input
   if (post_nms_top_n_ > 0) {
     num_rois = std::min(num_rois, post_nms_top_n_);
   }
-  top[0]->Reshape({batch_ * num_rois, 5});
+  int num_rois_global = num_rois;
+  if (global_context_) {
+    ++num_rois_global;
+  }
+  top[0]->Reshape({batch_ * num_rois_global, 5});
   top[1]->Reshape({batch_});
   if (top.size() > 2) {
     top[2]->Reshape({batch_ * num_rois});
@@ -88,12 +93,24 @@ void RegionProposalLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   int* order = order_.mutable_cpu_data();
   int* nms_out = nms_out_.mutable_cpu_data();
   // output
-  int num_rois = 0;
+  int total_rois = 0;
   Dtype* out_rois = top[0]->mutable_cpu_data();
   Dtype* out_num_proposals = top[1]->mutable_cpu_data();
   Dtype* out_scores = nullptr;
   if (top.size() > 2) {
     out_scores = top[2]->mutable_cpu_data();
+  }
+
+  if (global_context_) {
+    for (int n = 0; n < batch_; ++n) {
+      out_rois[0] = n;
+      out_rois[1] = 0.;
+      out_rois[2] = 0.;
+      out_rois[3] = im_info[1] - 1;
+      out_rois[4] = im_info[0] - 1;
+      out_rois += 5;
+    }
+    total_rois += batch_;
   }
   
   for (int n = 0; n < batch_; ++n) {
@@ -168,12 +185,12 @@ void RegionProposalLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
     out_num_proposals[n] = num_out;
-    num_rois += num_out;
+    total_rois += num_out;
   }
   // reshape the top based on actual number of ROIs generated
-  top[0]->Reshape({num_rois, 5});
+  top[0]->Reshape({total_rois, 5});
   if (top.size() > 2) {
-    top[2]->Reshape({num_rois});
+    top[2]->Reshape({total_rois});
   }
 }
 

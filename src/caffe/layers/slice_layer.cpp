@@ -7,6 +7,11 @@
 namespace caffe {
 
 template <typename Dtype>
+void SliceLayer<Dtype>::SetSlicePoints(const vector<int>& slice_points) {
+  slice_point_ = slice_points;
+}
+
+template <typename Dtype>
 void SliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const SliceParameter& slice_param = this->layer_param_.slice_param();

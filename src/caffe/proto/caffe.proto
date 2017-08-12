@@ -1117,6 +1117,9 @@ message RegionProposalParameter {
   optional float nms_threshold = 6;
   // Minimum size of bounding box
   optional uint32 min_size = 7;
+  // Include global context RoI. If true, the first N (batch size) proposals are
+  // global RoI boxes
+  optional bool global_context = 8 [default = false];
 }
 
 message ScaleParameter {

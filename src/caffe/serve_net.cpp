@@ -796,6 +796,12 @@ shared_ptr<Blob<Dtype> > ServeNet<Dtype>::set_blob(
   auto it = blob_names_index_.find(blob_name);
   CHECK(it != blob_names_index_.end()) << "Cannot find blob " << blob_name;
   int blob_id = it->second;
+  return set_blob(blob_id, blob);
+}
+
+template <typename Dtype>
+shared_ptr<Blob<Dtype> > ServeNet<Dtype>::set_blob(
+    int blob_id, shared_ptr<Blob<Dtype> > blob) {
   shared_ptr<Blob<Dtype> > old_blob = blobs_[blob_id];
   blobs_[blob_id] = blob;
   // replace blob pointers in bottom, top, input and output blobs
