@@ -20,12 +20,14 @@
 namespace caffe {
 
 template <typename Dtype>
-ServeNet<Dtype>::ServeNet(const NetParameter& param, size_t max_batch) {
-  Init(param, max_batch);
+ServeNet<Dtype>::ServeNet(const NetParameter& param, size_t max_batch,
+                          int axis) {
+  Init(param, max_batch, axis);
 }
 
 template <typename Dtype>
-ServeNet<Dtype>::ServeNet(const string& param_file, size_t max_batch) {
+ServeNet<Dtype>::ServeNet(const string& param_file, size_t max_batch,
+                          int axis) {
   NetParameter param;
   ReadNetParamsFromTextFileOrDie(param_file, &param);
   // Set phase, stages and level
@@ -36,11 +38,12 @@ ServeNet<Dtype>::ServeNet(const string& param_file, size_t max_batch) {
     }
   }
   param.mutable_state()->set_level(level);*/
-  Init(param, max_batch);
+  Init(param, max_batch, axis);
 }
 
 template <typename Dtype>
-void ServeNet<Dtype>::Init(const NetParameter& in_param, size_t max_batch) {
+void ServeNet<Dtype>::Init(const NetParameter& in_param, size_t max_batch,
+                           int axis) {
   // Set phase from the state.
   phase_ = in_param.state().phase();
   // Filter layers based on their include/exclude rules and
@@ -73,7 +76,7 @@ void ServeNet<Dtype>::Init(const NetParameter& in_param, size_t max_batch) {
       InputParameter* input_param = param.mutable_layer(layer_id)->
                                     mutable_input_param();
       for (int shape_id = 0; shape_id < input_param->shape_size(); ++shape_id) {
-        input_param->mutable_shape(shape_id)->set_dim(0, max_batch);
+        input_param->mutable_shape(shape_id)->set_dim(axis, max_batch);
       }
     }
     // Setup layer.

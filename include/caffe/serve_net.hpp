@@ -23,14 +23,17 @@ namespace caffe {
 template <typename Dtype>
 class ServeNet {
  public:
-  explicit ServeNet(const NetParameter& param, size_t max_batch = 0);
-  explicit ServeNet(const string& param_file, size_t max_batch = 0);
+  // max_batch is the maximum batch, axis is the axis index of batch
+  explicit ServeNet(const NetParameter& param, size_t max_batch = 0,
+                    int axis = 0);
+  explicit ServeNet(const string& param_file, size_t max_batch = 0,
+                    int axis = 0);
   //const int level = 0, const vector<string>* stages = NULL,
 
   virtual ~ServeNet() {}
 
   /// @brief Initialize a network with a NetParameter.
-  void Init(const NetParameter& param, size_t max_batch);
+  void Init(const NetParameter& param, size_t max_batch, int axis);
 
   /**
    * @brief Run Forward and return the result.
