@@ -841,6 +841,16 @@ const shared_ptr<Layer<Dtype> > ServeNet<Dtype>::layer_by_name(
   return layer_ptr;
 }
 
+template <typename Dtype>
+int ServeNet<Dtype>::layer_index_by_name(const string& layer_name) const {
+  shared_ptr<Layer<Dtype> > layer_ptr;
+  if (has_layer(layer_name)) {
+    return layer_names_index_.at(layer_name);
+  }
+  LOG(WARNING) << "Unknown layer name " << layer_name;
+  return -1;
+}
+
 INSTANTIATE_CLASS(ServeNet);
 
 }  // namespace caffe
