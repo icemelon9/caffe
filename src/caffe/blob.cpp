@@ -37,7 +37,7 @@ void Blob<Dtype>::Reshape(const vector<int>& shape) {
     shape_[i] = shape[i];
     shape_data[i] = shape[i];
   }
-  if (count_ > capacity_) {
+  if (count_ > capacity_ || (Caffe::release_memory() && count_ < capacity_)) {
     capacity_ = count_;
     data_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
     diff_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));

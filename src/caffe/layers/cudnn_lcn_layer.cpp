@@ -39,7 +39,9 @@ void CuDNNLCNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   size_t totalSizeInBytes = sizeof(Dtype)*bottom[0]->num()* \
                             this->channels_*this->height_*this->width_;
 
-  if (totalSizeInBytes > tempDataSize) {
+  if (totalSizeInBytes > tempDataSize ||
+      (Caffe::release_memory() && totalSizeInBytes < tempDataSize)) {
+    DLOG(INFO) << "Reallocating temporary data storage: " << totalSizeInBytes;
     tempDataSize = totalSizeInBytes;
 
     cudaFree(tempData1);

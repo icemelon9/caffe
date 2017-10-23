@@ -123,8 +123,6 @@ void ServeNet<Dtype>::Init(const NetParameter& in_param, size_t max_batch,
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       LOG_IF(INFO, Caffe::root_solver())
           << "Top shape: " << top_vecs_[layer_id][top_id]->shape_string();
-      // materialize the gpu buffer
-      top_vecs_[layer_id][top_id]->gpu_data();
       memory_used_ += top_vecs_[layer_id][top_id]->count();
     }
     LOG_IF(INFO, Caffe::root_solver())
@@ -619,6 +617,8 @@ void ServeNet<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       }
       const bool kReshape = false;
       target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
+      // Copy weight to GPU memory
+      target_blobs[j]->gpu_data();
     }
   }
 }

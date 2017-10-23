@@ -53,7 +53,8 @@ void GlobalInit(int* pargc, char*** pargv) {
 
 Caffe::Caffe()
     : random_generator_(), mode_(Caffe::CPU),
-      solver_count_(1), solver_rank_(0), multiprocess_(false) { }
+      solver_count_(1), solver_rank_(0), multiprocess_(false),
+      release_memory_(false) { }
 
 Caffe::~Caffe() { }
 

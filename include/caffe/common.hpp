@@ -166,6 +166,11 @@ class Caffe {
   inline static bool multiprocess() { return Get().multiprocess_; }
   inline static void set_multiprocess(bool val) { Get().multiprocess_ = val; }
   inline static bool root_solver() { return Get().solver_rank_ == 0; }
+  // Release memory flag
+  inline static void set_release_memory(bool flag) {
+    Get().release_memory_ = flag;
+  }
+  inline static bool release_memory() { return Get().release_memory_; }
 
  protected:
 #ifndef CPU_ONLY
@@ -180,6 +185,9 @@ class Caffe {
   int solver_count_;
   int solver_rank_;
   bool multiprocess_;
+
+  // Release memory flag
+  bool release_memory_;
 
  private:
   // The private constructor to avoid duplicate instantiation.
